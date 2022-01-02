@@ -1,0 +1,2 @@
+language = "python3"
+run = "DISCORD_TOKEN='zero' poetry run python -m bot"

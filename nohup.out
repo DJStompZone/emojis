@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/opt/virtualenvs/python3/bin/waitress-serve", line 8, in <module>
+    sys.exit(run())
+  File "/opt/virtualenvs/python3/lib/python3.8/site-packages/waitress/runner.py", line 283, in run
+    app = resolve(module, obj_name)
+  File "/opt/virtualenvs/python3/lib/python3.8/site-packages/waitress/runner.py", line 218, in resolve
+    obj = __import__(module_name, fromlist=segments[:1])
+  File "/home/runner/emojis/keep_alive/__init__.py", line 17, in <module>
+    serve(app, host='0.0.0.0', port=5725)
+  File "/opt/virtualenvs/python3/lib/python3.8/site-packages/waitress/__init__.py", line 13, in serve
+    server = _server(app, **kw)
+  File "/opt/virtualenvs/python3/lib/python3.8/site-packages/waitress/server.py", line 78, in create_server
+    last_serv = TcpWSGIServer(
+  File "/opt/virtualenvs/python3/lib/python3.8/site-packages/waitress/server.py", line 244, in __init__
+    self.bind_server_socket()
+  File "/opt/virtualenvs/python3/lib/python3.8/site-packages/waitress/server.py", line 361, in bind_server_socket
+    self.bind(sockaddr)
+  File "/opt/virtualenvs/python3/lib/python3.8/site-packages/waitress/wasyncore.py", line 396, in bind
+    return self.socket.bind(addr)
+OSError: [Errno 98] Address already in use

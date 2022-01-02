@@ -13,7 +13,7 @@ class Fun(Cog):
     @command(
         name="jumbo",
         description="View an emoji in full size.",
-        usage=">jumbo [emoji]",
+        usage="~jumbo [emoji]",
     )
     async def jumbo(self, ctx, emoji: PartialEmoji) -> None:
         """
@@ -27,7 +27,7 @@ class Fun(Cog):
     @command(
         name="emojify",
         description="Convert a sentence to emojis.",
-        usage=">emojify [sentence]",
+        usage="~emojify [sentence]",
     )
     @guild_only()
     async def emojify(self, ctx, *, sentence) -> None:
@@ -63,7 +63,7 @@ class Fun(Cog):
     @command(
         name="random",
         description="Upload a random emoji.",
-        usage=">random",
+        usage="~random",
     )
     @guild_only()
     @has_permissions(manage_emojis=True)
@@ -88,7 +88,7 @@ class Fun(Cog):
     @command(
         name="clap",
         description="👏YOUR👏MESSAGE👏HERE👏",
-        usage=">clap [message]",
+        usage="~clap [message]",
         aliases=("👏",),
         pass_context=True,
     )

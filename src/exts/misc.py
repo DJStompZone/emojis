@@ -3,12 +3,10 @@ from discord.ext.commands import Command, CommandNotFound, is_owner
 
 from src.common.common import *
 
-INVITE_URL = "https://discord.com/oauth2/authorize?client_id=749301838859337799&permissions=1946545248&scope=bot"
-VOTE_URL = "https://top.gg/bot/749301838859337799/vote"
-GITHUB_URL = "https://github.com/passivity/emojis"
-WHATS_NEW = (
-    "**`>prefix`:** You can now change the bot's prefix."
-)
+INVITE_URL = "https://github.com/DJStompZone/emojis"
+VOTE_URL = "https://github.com/DJStompZone/emojis"
+GITHUB_URL = "https://github.com/DJStompZone/emojis"
+WHATS_NEW = "https://github.com/DJStompZone/emojis"
 
 
 def setup(bot):
@@ -131,72 +129,72 @@ class Misc(Cog):
             )
         )
 
-    @command(
-        name="vote",
-        description="Vote for the bot.",
-        usage=">vote",
-        aliases=("v",),
-    )
-    async def vote(self, ctx) -> None:
-        """ Get the link to vote for the bot. """
-        await ctx.send(
-            embed=Embed(
-                description=":orange_heart: **[Click here to vote for the bot.](%s)**"
-                % VOTE_URL
-            )
-        )
+    # @command(
+    #     name="vote",
+    #     description="Vote for the bot.",
+    #     usage=">vote",
+    #     aliases=("v",),
+    # )
+    # async def vote(self, ctx) -> None:
+    #     """ Get the link to vote for the bot. """
+    #     await ctx.send(
+    #         embed=Embed(
+    #             description=":orange_heart: **[Click here to vote for the bot.](%s)**"
+    #             % VOTE_URL
+    #         )
+    #     )
 
-    @command(
-        name="support",
-        description="Support the bot on GitHub.",
-        usage=">support",
-        aliases=(
-            "supp",
-            "sup",
-        ),
-    )
-    async def support(self, ctx) -> None:
-        """ Get the GitHub link for the bot. """
-        await ctx.send(
-            embed=Embed(
-                description=":orange_heart: **[Click here to star & watch the bot on GitHub.](%s)**"
-                % GITHUB_URL
-            )
-        )
+    # @command(
+    #     name="support",
+    #     description="Support the bot on GitHub.",
+    #     usage=">support",
+    #     aliases=(
+    #         "supp",
+    #         "sup",
+    #     ),
+    # )
+    # async def support(self, ctx) -> None:
+    #     """ Get the GitHub link for the bot. """
+    #     await ctx.send(
+    #         embed=Embed(
+    #             description=":orange_heart: **[Click here to star & watch the bot on GitHub.](%s)**"
+    #             % GITHUB_URL
+    #         )
+    #     )
 
-    @command(
-        name="usage",
-        description="View command usage.",
-        usage=">usage",
-        hidden=True,
-    )
-    @is_owner()
-    async def usage(self, ctx) -> None:
-        """ View usage stats for the bot. """
-        query = db.usage.find({}, {"_id": False})
+    # @command(
+    #     name="usage",
+    #     description="View command usage.",
+    #     usage=">usage",
+    #     hidden=True,
+    # )
+    # @is_owner()
+    # async def usage(self, ctx) -> None:
+    #     """ View usage stats for the bot. """
+    #     query = db.usage.find({}, {"_id": False})
 
-        async for i in query:
-            results = dict(i)
-            sort = sorted(results, key=lambda x: results[x], reverse=True)
-            usage = ["`>%s`: %d" % (x, results[x]) for x in sort]
+    #     async for i in query:
+    #         results = dict(i)
+    #         sort = sorted(results, key=lambda x: results[x], reverse=True)
+    #         usage = ["`>%s`: %d" % (x, results[x]) for x in sort]
 
-            pic = None
+    #         pic = None
 
-            try:
-                with open("./data/stats/usage.png", "rb") as f:
-                    pic = File(f)
-            except OSError:
-                pass
+    #         try:
+    #             with open("./data/stats/usage.png", "rb") as f:
+    #                 pic = File(f)
+    #         except OSError:
+    #             pass
 
-            await ctx.send(
-                embed=Embed(
-                    description="%s\n\nTotal: %d"
-                    % ("\n".join(usage), sum(results.values()))
-                ),
-                file=pic,
-            )
+    #         await ctx.send(
+    #             embed=Embed(
+    #                 description="%s\n\nTotal: %d"
+    #                 % ("\n".join(usage), sum(results.values()))
+    #             ),
+    #             file=pic,
+    #         )
 
-            return
+    #         return
 
     @command(
         name="reload",

@@ -2,6 +2,7 @@ import logging
 from asyncio import TimeoutError as TimeoutError_
 from random import randint
 from re import sub
+import json
 
 from discord import Member, User, Message, NotFound
 from discord.ext.commands import cooldown, BucketType, is_owner
@@ -14,7 +15,9 @@ class Utility(Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.packs = get("https://discordemoji.com/api/packs").json()
+        #self.packs = get("https://discordemoji.com/api/packs").json()
+        dataf = open('packs.json',)
+        self.packs = json.load(dataf)
         self.packs_embed = self.list_packs()
 
     def list_packs(self) -> Embed:
@@ -22,11 +25,11 @@ class Utility(Cog):
 
         list_embed = Embed(
             title=f"{len(self.packs)} emoji packs available",
-            description="Type `>pack [number]` to view (example: `>pack 1`)\n",
+            description="Type `~pack [number]` to view (example: `~pack 1`)\n",
         )
 
         for count, value in enumerate(self.packs, start=1):
-            list_embed.description += '\n`>pack %d` -- view **"%s"**' % (
+            list_embed.description += '\n`~pack %d` -- view **"%s"**' % (
                 count,
                 value["name"],
             )
@@ -36,13 +39,18 @@ class Utility(Cog):
     @command(
         name="upload",
         description="Upload an emoji.",
-        usage=">upload [emoji name] [url]",
-        aliases=("steal",),
+        usage="~upload [emoji name] [url]",
+        aliases=("steal", ),
     )
     @guild_only()
     @has_permissions(manage_emojis=True)
     @cooldown(1, 15, BucketType.user)
-    async def upload(self, ctx, name, url: str = None, *, extra_args="") -> None:
+    async def upload(self,
+                     ctx,
+                     name,
+                     url: str = None,
+                     *,
+                     extra_args="") -> None:
         """
         Upload an emoji from an image. There are a few options for how to do this:
 
@@ -85,13 +93,12 @@ class Utility(Cog):
                     await ctx.upload_emoji(emoji.name, emoji.url)
                 else:
                     raise Exception(
-                        "That doesn't look quite right. Check `>help upload`."
-                    )
+                        "That doesn't look quite right. Check `~help upload`.")
 
     @command(
         name="pfp",
         description="Turn a profile pic into an emoji.",
-        usage=">pfp [@user]",
+        usage="~pfp [@user]",
         aliases=(
             "avatar",
             "pic",
@@ -118,7 +125,7 @@ class Utility(Cog):
     @command(
         name="search",
         description="Search for an emoji.",
-        usage=">search [query]",
+        usage="~search [query]",
         aliases=("browse", "find"),
     )
     @guild_only()
@@ -131,12 +138,13 @@ class Utility(Cog):
         :param ctx:
         :param query: The search term that emoji names must contain.
         """
-
         def reaction_check(reaction) -> bool:
             """ Check if the reaction added is valid. """
             return reaction.member.id == ctx.author.id
 
-        async def browse(emojis: list, page: int, existing_msg: Message = None) -> None:
+        async def browse(emojis: list,
+                         page: int,
+                         existing_msg: Message = None) -> None:
             """
             Create and manage an emoji browser.
 
@@ -148,14 +156,11 @@ class Utility(Cog):
 
             # Pick the Emoji and create the search Embed
             emoji = emojis[page]
-            embed = (
-                Embed(
-                    title="Page %s / %s" % (page + 1, len(emojis)),
-                    description="`:%s:`" % emoji.name,
-                )
-                .set_thumbnail(url=emoji.url)
-                .set_author(icon_url=ctx.author.avatar_url, name=ctx.author.name)
-            )
+            embed = (Embed(
+                title="Page %s / %s" % (page + 1, len(emojis)),
+                description="`:%s:`" % emoji.name,
+            ).set_thumbnail(url=emoji.url).set_author(
+                icon_url=ctx.author.avatar_url, name=ctx.author.name))
 
             # If no message exists, send the Embed to the chat
             if not existing_msg:
@@ -172,16 +177,15 @@ class Utility(Cog):
             try:
                 # Wait for a reaction to be added
                 # Times out after 30 seconds and must be a valid emoji (⬅/👍/➡/🔀)
-                reaction = await self.bot.wait_for(
-                    "raw_reaction_add", timeout=30.0, check=reaction_check
-                )
+                reaction = await self.bot.wait_for("raw_reaction_add",
+                                                   timeout=30.0,
+                                                   check=reaction_check)
             except TimeoutError_:  # asyncio.TimeoutError
-                await sent_msg.edit(
-                    embed=Embed(
-                        colour=Colours.error,
-                        description="%s This search timed out." % CustomEmojis.error,
-                    )
-                )
+                await sent_msg.edit(embed=Embed(
+                    colour=Colours.error,
+                    description="%s This search timed out." %
+                    CustomEmojis.error,
+                ))
             else:
                 reaction = reaction.emoji.name
 
@@ -207,7 +211,9 @@ class Utility(Cog):
 
         # Search for results in the emoji cache
         query = query.lower()
-        search_results = [e for e in self.bot.emojis if query in e.name.lower()]
+        search_results = [
+            e for e in self.bot.emojis if query in e.name.lower()
+        ]
 
         if len(search_results) == 0:
             raise Exception("No results. ")
@@ -219,8 +225,8 @@ class Utility(Cog):
     @command(
         name="link",
         description="Get an emoji's URL.",
-        usage=">link [emoji]",
-        aliases=("url",),
+        usage="~link [emoji]",
+        aliases=("url", ),
     )
     async def link(self, ctx, emoji: PartialEmoji) -> None:
         """
@@ -234,7 +240,7 @@ class Utility(Cog):
     @command(
         name="info",
         description="Get information on an emoji.",
-        usage=">info [emoji]",
+        usage="~info [emoji]",
         aliases=("?", "details"),
     )
     @guild_only()
@@ -252,29 +258,26 @@ class Utility(Cog):
             emoji = await ctx.guild.fetch_emoji(emoji.id)
         except NotFound:
             raise Exception(
-                f"Can't find that emoji. Make sure it's from *this* server."
-            )
+                f"Can't find that emoji. Make sure it's from *this* server.")
 
-        await ctx.send(
-            embed=Embed(title=emoji.name)
-            .set_thumbnail(url=emoji.url)
-            .add_field(name="ID", value=emoji.id)
-            .add_field(name="Usage", value=f"`:%s:`" % emoji.name)
-            .add_field(name="Created at", value=emoji.created_at)
-            .add_field(name="Created by", value=emoji.user)
-            .add_field(name="URL", value=f"[Link](%s)" % emoji.url)
-            .add_field(name="Animated", value=emoji.animated)
-        )
+        await ctx.send(embed=Embed(title=emoji.name).set_thumbnail(
+            url=emoji.url).add_field(name="ID", value=emoji.id).add_field(
+                name="Usage", value=f"`:%s:`" % emoji.name
+            ).add_field(name="Created at", value=emoji.created_at).add_field(
+                name="Created by", value=emoji.user).add_field(
+                    name="URL", value=f"[Link](%s)" %
+                    emoji.url).add_field(name="Animated", value=emoji.animated)
+                       )
 
     @command(
         name="pack",
-        description="View an emoji pack. Use `>pack` first!",
-        usage=">pack [number]",
-        aliases=("packs",),
+        description="View an emoji pack. Use `~pack` first!",
+        usage="~pack [number]",
+        aliases=("packs", ),
     )
     async def pack(self, ctx, pack_number: int = None):
         """
-        View a specific emoji pack as listed by >packs.
+        View a specific emoji pack as listed by ~packs.
 
         :param ctx:
         :param pack_number: The pack to view.
@@ -289,15 +292,14 @@ class Utility(Cog):
             pack = self.packs[pack_number - 1]
         except IndexError:
             raise Exception(
-                "That's not a valid pack. Use `>packs` to see a list of available packs."
+                "That's not a valid pack. Use `~packs` to see a list of available packs."
             )
 
         # fields
-        embed = (
-            Embed(title=pack["name"], description=pack["description"])
-            .add_field(name="Download", value=pack["download"])
-            .set_image(url=pack["image"])
-        )
+        embed = (Embed(
+            title=pack["name"], description=pack["description"]).add_field(
+                name="Download",
+                value=pack["download"]).set_image(url=pack["image"]))
 
         # send
         await ctx.send(embed=embed)

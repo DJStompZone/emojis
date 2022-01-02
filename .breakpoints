@@ -1,0 +1,28 @@
+{
+  "files": {
+    ".replit": [
+      {
+        "id": "e3a05207-77ec-42dd-b1e7-222ea33f6df9",
+        "line": 2,
+        "version": 199,
+        "index": 21
+      }
+    ],
+    "bot/background.py": [
+      {
+        "id": "a59588a2-1000-47a3-9dc8-0a1ba9eaeab4",
+        "line": 1,
+        "version": 42,
+        "index": 0
+      }
+    ],
+    "program.sh": [
+      {
+        "id": "41055150-ed4d-43ae-a0f8-a02c58e65d6c",
+        "line": 1,
+        "version": 57,
+        "index": 0
+      }
+    ]
+  }
+}

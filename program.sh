@@ -1,0 +1,1 @@
+(waitress-serve --port=7125 keep_alive:app &) & python -m bot

@@ -1,9 +1,10 @@
+import os
 import asyncio
 import logging
 from os import listdir
 from os.path import splitext
 from re import search
-
+import keep_alive
 import matplotlib.pyplot as plt
 from dateutil.utils import today
 from discord import (
@@ -24,41 +25,38 @@ from discord.ext.commands import (
     CooldownMapping,
 )
 
-from src.common.common import *
 
+
+from src.common.common import *
+# from replit import db as db
 log = logging.Logger(__name__)
 
+# from keep_alive import app as keep_alive_app
+# keep_alive_app.loaded_in = True
 GLOBAL_COOLDOWN = (1.0, 5.0)  # (1.0, 5.0) = 1 command per 5 seconds
-WELCOME_MSG = (
-    "Thanks for inviting Emojis. My prefix is `>`.\n\n"
-    "%s **Important: [Read about getting started](https://github.com/passivity/emojis/blob/master/README.md)**."
-    % CustomEmojis.warning
-)
+WELCOME_MSG = "Thanks for inviting Emojis. My prefix is `~`.\n\n"
 
 
 class CustomContext(Context):
     """ A custom Context class with additional methods. """
-
     async def error(self, err: Union[str, Exception]) -> None:
         """ Send an error Embed to a specified channel. """
 
-        await self.send(
-            embed=Embed(colour=Colours.error, description=f"{CustomEmojis.error} {err}")
-        )
+        await self.send(embed=Embed(colour=Colours.error,
+                                    description=f"{CustomEmojis.error} {err}"))
 
     async def success(self, string):
         """ Send a success Embed to a specified channel. """
 
-        await self.send(
-            embed=Embed(
-                colour=Colours.success,
-                description="%s %s" % (CustomEmojis.success, string),
-            )
-        )
+        await self.send(embed=Embed(
+            colour=Colours.success,
+            description="%s %s" % (CustomEmojis.success, string),
+        ))
 
-    async def upload_emoji(
-        self, name: str, url: str, post_success: bool = True
-    ) -> Emoji:
+    async def upload_emoji(self,
+                           name: str,
+                           url: str,
+                           post_success: bool = True) -> Emoji:
         """
         Upload a custom emoji to a guild.
 
@@ -75,43 +73,46 @@ class CustomContext(Context):
 
             # Upload the emoji to the Guild
             new_emoji = await self.guild.create_custom_emoji(
-                name=name, image=emoji_bytes.read()
-            )
+                name=name, image=emoji_bytes.read())
         else:
-            raise Exception("Couldn't fetch image (%s)." % response.status_code)
+            raise Exception("Couldn't fetch image (%s)." %
+                            response.status_code)
 
         # Post a success Embed in the chat
         if post_success:
-            await self.send(
-                embed=Embed(
-                    colour=Colours.success,
-                    description="%s `:%s:`" % (CustomEmojis.success, name),
-                ).set_thumbnail(url=new_emoji.url)
-            )
+            await self.send(embed=Embed(
+                colour=Colours.success,
+                description="%s `:%s:`" % (CustomEmojis.success, name),
+            ).set_thumbnail(url=new_emoji.url))
 
         return new_emoji
 
 
 class Emojis(AutoShardedBot):
     """ A custom AutoShardedBot class with overridden methods."""
-
     def __init__(self):
-        self.cooldown = CooldownMapping.from_cooldown(*GLOBAL_COOLDOWN, BucketType.user)
+        self.cooldown = CooldownMapping.from_cooldown(*GLOBAL_COOLDOWN,
+                                                      BucketType.user)
         self.command_usage = {}
         self.prefixes = {}
         self.blacklist = set()
 
         # Make sure the bot can't be abused to mass ping
-        allowed_mentions = AllowedMentions(roles=False, everyone=False, users=True)
+        allowed_mentions = AllowedMentions(roles=False,
+                                           everyone=False,
+                                           users=True)
 
         # Minimum required
-        intents = Intents(guilds=True, emojis=True, messages=True, reactions=True)
+        intents = Intents(guilds=True,
+                          emojis=True,
+                          messages=True,
+                          reactions=True)
 
         super().__init__(
             command_prefix=self.get_prefix,
             description="An emoji management bot.",
             activity=Activity(
-                name=f">help",
+                name=f"~help",
                 type=ActivityType.watching,
             ),
             pm_help=None,
@@ -120,21 +121,21 @@ class Emojis(AutoShardedBot):
             allowed_mentions=allowed_mentions,
             intents=intents,
             owner_ids=[
-                554275447710548018,  # ruby
-                686941073792303157,  # Kaki
+                269249777185718274,  # DJ
             ],
         )
 
         # Update continuously
-        self.presence_updater = self.loop.create_task(self._bg_update_presence())
-        self.usage_updater = self.loop.create_task(self._bg_update_usage())
+        self.presence_updater = self.loop.create_task(
+            self._bg_update_presence())
+        # self.usage_updater = self.loop.create_task(self._bg_update_usage())
 
         # Update once
-        self.loop.create_task(self.update_prefix_list())
-        self.loop.create_task(self.update_blacklist())
+        # self.loop.create_task(self.update_prefix_list())
+        # self.loop.create_task(self.update_blacklist())
 
     async def get_prefix(self, message):
-        return self.prefixes.get(message.guild.id, ">")
+        return self.prefixes.get(message.guild.id, "~")
 
     async def get_context(self, message, *, cls=CustomContext):
         """ Use CustomContext instead of Context. """
@@ -162,8 +163,7 @@ class Emojis(AutoShardedBot):
             # Make missing argument errors clearer
             err = Exception(
                 "You're missing an argument (`%s`). Type `>help %s` for more info."
-                % (err.param.name, ctx.command)
-            )
+                % (err.param.name, ctx.command))
         elif isinstance(err, CommandInvokeError):
             # Try to simplify HTTP errors
             try:
@@ -179,7 +179,7 @@ class Emojis(AutoShardedBot):
 
     async def invoke(self, ctx):
         if ctx.message.author.id in self.blacklist:
-            await ctx.error("You're blacklisted. ")
+            await ctx.error("Sorry, buddy. You're blacklisted. ")
         else:
             await super().invoke(ctx)
 
@@ -203,17 +203,17 @@ class Emojis(AutoShardedBot):
     async def on_ready(self) -> None:  # noqa
         print("Bot ready!")
 
-    async def update_blacklist(self):
-        query = db.blacklist.find({}, {"_id": False})
+    # async def update_blacklist(self):
+    #     query = db.blacklist.find({}, {"_id": False})
 
-        async for result in query:
-            self.blacklist.add(result["id"])
+        # async for result in query:
+        #     self.blacklist.add(result["id"])
 
-    async def update_prefix_list(self):
-        query = db.prefixes.find({}, {"_id": False})
+    # async def update_prefix_list(self):
+    # #     query = db.prefixes.find({}, {"_id": False})
 
-        async for result in query:
-            self.prefixes[result["id"]] = result["prefix"]
+    #     async for result in query:
+    #         self.prefixes[result["id"]] = result["prefix"]
 
     async def _bg_update_presence(self, delay: int = 300) -> None:
         """ Update the bot's status continuously. """
@@ -223,42 +223,43 @@ class Emojis(AutoShardedBot):
         while True:
             if not self.is_closed():
                 try:
-                    await self.change_presence(
-                        activity=Activity(
-                            name=f">help",
-                            type=ActivityType.watching,
-                        )
-                    )
+                    await self.change_presence(activity=Activity(
+                        name=f">help",
+                        type=ActivityType.watching,
+                    ))
                 except HTTPException:
                     pass
 
             await asyncio.sleep(delay)
 
-    async def _bg_update_usage(self, delay: int = 900):
-        """ Update the bot's usage stats in MongoDB. """
+    # async def _bg_update_usage(self, delay: int = 900):
+    #     """ Update the bot's usage stats in MongoDB. """
 
-        await self.wait_until_ready()
+    #     await self.wait_until_ready()
 
-        while not self.is_closed():
-            # Update all-time usage data
-            for cmd, usage in self.command_usage.items():
-                # Update global command usage
-                await db.usage.update_one(
-                    {}, {"$inc": {cmd.lower(): usage}}, upsert=True
-                )
+    #     while not self.is_closed():
+    #         # Update all-time usage data
+    #         for cmd, usage in self.command_usage.items():
+    #             # Update global command usage
+    #             await db.usage.update_one({}, {"$inc": {
+    #                 cmd.lower(): usage
+    #             }},
+    #                                       upsert=True)
 
-                # Update today's command usage
-                await db.historical_usage.update_one(
-                    {"date": str(today().strftime("%Y-%m-%d"))},
-                    {"$inc": {"commands": usage}},
-                    upsert=True,
-                )
+    #             # Update today's command usage
+    #             await db.historical_usage.update_one(
+    #                 {"date": str(today().strftime("%Y-%m-%d"))},
+    #                 {"$inc": {
+    #                     "commands": usage
+    #                 }},
+    #                 upsert=True,
+    #             )
 
-            # Reset command usage cache
-            self.command_usage = {}
+    #         # Reset command usage cache
+    #         self.command_usage = {}
 
-            await make_graph()
-            await asyncio.sleep(delay)
+    #         await make_graph()
+    #         await asyncio.sleep(delay)
 
     async def replace_unparsed_emojis(self, message: Message):
         """
@@ -284,8 +285,7 @@ class Emojis(AutoShardedBot):
                         try:
                             # Convert to Emoji
                             found_emoji = await EmojiConverter().convert(
-                                ctx, word.replace(":", "")
-                            )
+                                ctx, word.replace(":", ""))
 
                             message_split[i] = str(found_emoji)
                             has_updated = True
@@ -305,29 +305,30 @@ class Emojis(AutoShardedBot):
                     await message.delete()
 
 
-async def make_graph():
-    """ Make a graph of command usage. """
-    query = db.historical_usage.find({}, {"_id": False})
+# async def make_graph():
+#     """ Make a graph of command usage. """
+#     query = db.historical_usage.find({}, {"_id": False})
 
-    dates = []
-    commands = []
+#     dates = []
+#     commands = []
 
-    async for i in query:
-        date = i["date"]
-        cmds = i["commands"]
+#     async for i in query:
+#         date = i["date"]
+#         cmds = i["commands"]
 
-        dates.append(date)
-        commands.append(cmds)
+#         dates.append(date)
+#         commands.append(cmds)
 
-    plt.clf()
-    plt.plot(dates, commands)
-    plt.title = "Command usage by day"
-    plt.savefig("./data/stats/usage.png")
+#     plt.clf()
+#     plt.plot(dates, commands)
+#     plt.title = "Command usage by day"
+#     plt.savefig("./data/stats/usage.png")
 
 
 if __name__ == "__main__":
     bot = Emojis()
-
+    
+    
     # Remove the default help command so a better one can be added
     bot.remove_command("help")
 
@@ -340,7 +341,6 @@ if __name__ == "__main__":
 
     # Reload the Misc extension to update the help command
     bot.reload_extension("src.exts.misc")
-
-    # Code written after this block may not run
-    with open("./data/token.txt", "r") as token:
-        bot.run(token.readline())
+    bottoken = os.environ['bottoken']
+    keep_alive.keep_alive()
+    bot.run(bottoken)
